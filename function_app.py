@@ -7,7 +7,7 @@ app = func.FunctionApp()
 
 # ---------------------------------------------------------
 # HTTP FUNCTION
-# Simple HTTP endpoint used to verify the Function App
+# Simple endpoint used to verify the Function App is live.
 # ---------------------------------------------------------
 
 @app.route(route="howdy", auth_level=func.AuthLevel.FUNCTION)
@@ -40,8 +40,8 @@ def howdy(req: func.HttpRequest) -> func.HttpResponse:
 # ---------------------------------------------------------
 # FOOD TRUCK TRANSACTION PROCESSOR
 #
-# Triggered automatically whenever a new blob is uploaded
-# to the "uploads" Blob Storage container.
+# Triggered automatically when a new transaction JSON file
+# is uploaded to the "uploads" Blob Storage container.
 # ---------------------------------------------------------
 
 @app.blob_trigger(
@@ -56,7 +56,7 @@ def process_upload(myblob: func.InputStream):
     )
 
     try:
-        # Read the uploaded blob and parse it as JSON.
+        # Read the uploaded blob and parse the JSON.
         transaction = json.loads(
             myblob.read().decode("utf-8")
         )
@@ -67,23 +67,39 @@ def process_upload(myblob: func.InputStream):
         amount = float(transaction["amount"])
         payment_type = transaction["payment_type"]
 
+        # Optional promo code.
+        promo_code = transaction.get("promo_code")
+
         # Basic validation.
         if amount <= 0:
             raise ValueError(
                 "Transaction amount must be greater than zero"
             )
 
-        # Hypothetical 2% platform processing fee.
+        # Save original price before discounts.
+        original_amount = amount
+        discount = 0.0
+
+        # Hypothetical Sandia Sweets promo.
+        if promo_code == "505CANDY":
+            discount = round(amount * 0.10, 2)
+            amount = round(amount - discount, 2)
+
+        # Hypothetical 2% platform fee calculated
+        # after any promotional discount.
         platform_fee = round(amount * 0.02, 2)
         truck_proceeds = round(amount - platform_fee, 2)
 
-        # Record the successfully processed transaction.
+        # Log successfully processed transaction.
         logging.info(
             f"TRANSACTION PROCESSED | "
             f"ID: {transaction_id} | "
             f"Truck: {truck_id} | "
             f"Payment: {payment_type} | "
-            f"Gross: ${amount:.2f} | "
+            f"Original: ${original_amount:.2f} | "
+            f"Promo: {promo_code or 'NONE'} | "
+            f"Discount: ${discount:.2f} | "
+            f"Charged: ${amount:.2f} | "
             f"Platform Fee: ${platform_fee:.2f} | "
             f"Truck Proceeds: ${truck_proceeds:.2f}"
         )
