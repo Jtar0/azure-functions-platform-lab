@@ -1,0 +1,6 @@
+{
+  "transaction_id": "TXN-1001",
+  "truck_id": "burque-tacos-01",
+  "amount": 18.47,
+  "payment_type": "card"
+}

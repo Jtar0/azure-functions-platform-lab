@@ -1,0 +1,7 @@
+{
+  "transaction_id": "TXN-1003",
+  "truck_id": "sandia-sweets",
+  "amount": 11.25,
+  "payment_type": "card",
+  "promo_code": "505CANDY"
+}

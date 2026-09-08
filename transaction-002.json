@@ -1,0 +1,6 @@
+{
+  "transaction_id": "TXN-1002",
+  "truck_id": "duke-city-dogs",
+  "amount": 27.50,
+  "payment_type": "cash"
+}
